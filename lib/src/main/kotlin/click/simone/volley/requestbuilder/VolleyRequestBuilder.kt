@@ -2,8 +2,9 @@ package click.simone.volley.requestbuilder
 
 import com.android.volley.Request
 import com.android.volley.Response
+import com.android.volley.toolbox.RequestFuture
 
-class VolleyRequestBuilder<T> {
+open class VolleyRequestBuilder<T> {
 
     protected var method: Int = Request.Method.GET
     private var sourceUrl: String? = null
@@ -85,7 +86,15 @@ class VolleyRequestBuilder<T> {
         return this
     }
 
+    fun buildBlockingRequest(): Pair<Request<T>, RequestFuture<T>> {
+        val requestFuture: RequestFuture<T> = RequestFuture.newFuture();
+        listener = requestFuture
+        errorListener = requestFuture
+        return Pair(build(), requestFuture)
+    }
+
     fun build(): Request<T> {
         return CustomHeaderRequest<T>(url, listener, errorListener, method, body, additionalHeaders, parser)
     }
 }
+

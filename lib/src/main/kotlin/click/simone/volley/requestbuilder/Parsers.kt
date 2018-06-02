@@ -3,6 +3,11 @@ package click.simone.volley.requestbuilder
 import org.json.JSONObject
 import java.io.IOException
 
+class StringRequestBuilder: VolleyRequestBuilder<String>(){
+    init {
+        parser(StringParser())
+    }
+}
 
 class StringParser: Parser<String> {
     override fun parse(data: ByteArray): String {
@@ -11,6 +16,12 @@ class StringParser: Parser<String> {
         } catch (e: Exception){
             throw IOException(e)
         }
+    }
+}
+
+class JSONObjectRequestBuilder: VolleyRequestBuilder<JSONObject>(){
+    init {
+        parser(JSONObjectParser())
     }
 }
 
