@@ -92,10 +92,11 @@ open class VolleyRequestBuilder<T> {
         return this
     }
 
-    fun buildBlockingRequest(requestFuture: RequestFuture<T>): Request<T>{
+    fun buildBlockingRequest(): Pair<Request<T>, RequestFuture<T>> {
+        val requestFuture: RequestFuture<T> = RequestFuture.newFuture()
         listener = requestFuture
         errorListener = requestFuture
-        return build()
+        return Pair(build(), requestFuture)
     }
 
     fun build(): Request<T> {
