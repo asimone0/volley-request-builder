@@ -22,6 +22,7 @@ open class VolleyRequestBuilder<T> {
         hdrs
     }
     private var additionalHeaders: Map<String, String>? = null
+    protected var cacheExpiration: CacheExpiration? = null
 
     protected val headers: Map<String, String>
         get() {
@@ -86,15 +87,19 @@ open class VolleyRequestBuilder<T> {
         return this
     }
 
-    fun buildBlockingRequest(): Pair<Request<T>, RequestFuture<T>> {
-        val requestFuture: RequestFuture<T> = RequestFuture.newFuture();
+    fun cacheExpirarion(cacheExpiration: CacheExpiration): VolleyRequestBuilder<T> {
+        this.cacheExpiration = cacheExpiration
+        return this
+    }
+
+    fun buildBlockingRequest(requestFuture: RequestFuture<T>): Request<T>{
         listener = requestFuture
         errorListener = requestFuture
-        return Pair(build(), requestFuture)
+        return build()
     }
 
     fun build(): Request<T> {
-        return CustomHeaderRequest<T>(url, listener, errorListener, method, body, additionalHeaders, parser)
+        return ParserRequest<T>(url, listener, errorListener, method, body, additionalHeaders, parser, cacheExpiration)
     }
 }
 
