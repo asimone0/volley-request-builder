@@ -25,7 +25,8 @@ class ParserRequest<T>(
         protected val body: String? = null,
         additionalHeaders: Map<String, String>? = null,
         val parser: Parser<T>,
-        val cacheExpiration: CacheExpiration? = null
+        val cacheExpiration: CacheExpiration? = null,
+        val policy: RetryPolicy? = null
 ) : Request<T>(method, url, errorListener) {
 
     protected val headerMap = mutableMapOf<String, String>()
@@ -44,6 +45,7 @@ class ParserRequest<T>(
 
             }
         }
+        policy?.let { retryPolicy = it  }
     }
 
     @Throws(AuthFailureError::class)

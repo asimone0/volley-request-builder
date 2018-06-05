@@ -2,6 +2,7 @@ package click.simone.volley.requestbuilder
 
 import com.android.volley.Request
 import com.android.volley.Response
+import com.android.volley.RetryPolicy
 import com.android.volley.toolbox.RequestFuture
 
 open class VolleyRequestBuilder<T> {
@@ -23,6 +24,7 @@ open class VolleyRequestBuilder<T> {
     }
     private var additionalHeaders: Map<String, String>? = null
     protected var cacheExpiration: CacheExpiration? = null
+    protected var retryPolicy: RetryPolicy? = null
 
     protected val headers: Map<String, String>
         get() {
@@ -92,6 +94,11 @@ open class VolleyRequestBuilder<T> {
         return this
     }
 
+    fun retryPolicy(policy: RetryPolicy): VolleyRequestBuilder<T> {
+        retryPolicy = policy
+        return this
+    }
+
     fun buildBlockingRequest(): Pair<Request<T>, RequestFuture<T>> {
         val requestFuture: RequestFuture<T> = RequestFuture.newFuture()
         listener = requestFuture
@@ -100,7 +107,7 @@ open class VolleyRequestBuilder<T> {
     }
 
     fun build(): Request<T> {
-        return ParserRequest<T>(url, listener, errorListener, method, body, headers, parser, cacheExpiration)
+        return ParserRequest<T>(url, listener, errorListener, method, body, headers, parser, cacheExpiration, retryPolicy)
     }
 }
 
