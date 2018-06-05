@@ -100,7 +100,7 @@ open class VolleyRequestBuilder<T> {
     }
 
     fun build(): Request<T> {
-        return ParserRequest<T>(url, listener, errorListener, method, body, additionalHeaders, parser, cacheExpiration)
+        return ParserRequest<T>(url, listener, errorListener, method, body, headers, parser, cacheExpiration)
     }
 }
 
