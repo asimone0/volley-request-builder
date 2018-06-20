@@ -18,15 +18,15 @@ data class CacheExpiration(val qty: Long, val timeUnit: TimeUnit) {
 }
 
 class ParserRequest<T>(
-        url: String,
-        protected var listener: Response.Listener<T>? = null,
-        errorListener: Response.ErrorListener? = null,
-        method: Int = Method.GET,
-        protected val body: String? = null,
-        additionalHeaders: Map<String, String>? = null,
-        val parser: Parser<T>,
-        val cacheExpiration: CacheExpiration? = null,
-        val policy: RetryPolicy? = null
+    url: String,
+    protected var listener: Response.Listener<T>? = null,
+    errorListener: Response.ErrorListener? = null,
+    method: Int = Method.GET,
+    protected val body: String? = null,
+    requestHeaders: Map<String, String>? = null,
+    val parser: Parser<T>,
+    val cacheExpiration: CacheExpiration? = null,
+    val policy: RetryPolicy? = null
 ) : Request<T>(method, url, errorListener) {
 
     protected val headerMap = mutableMapOf<String, String>()
@@ -34,18 +34,18 @@ class ParserRequest<T>(
     protected val syncLock = Any()
 
     init {
-        initRequest(method, additionalHeaders)
+        initRequest(method, requestHeaders)
     }
 
-    private fun initRequest(method: Int, additionalHeaders: Map<String, String>?) {
-        additionalHeaders?.forEach { entry ->
+    private fun initRequest(method: Int, requestHeaders: Map<String, String>?) {
+        requestHeaders?.forEach { entry ->
             try {
                 checkForContentType(method, entry.key, entry.value)
             } catch (e: AuthFailureError) {
 
             }
         }
-        policy?.let { retryPolicy = it  }
+        policy?.let { retryPolicy = it }
     }
 
     @Throws(AuthFailureError::class)
@@ -62,7 +62,7 @@ class ParserRequest<T>(
 
     /**
      * Super class defaults to application/x-www-form-urlencoded
-     * contentType is set from inbound headers in initRequest{}
+     * contentType is set from inbound requestHeaders in initRequest{}
      */
     override fun getBodyContentType(): String {
         return contentType?.let { it } ?: super.getBodyContentType()
@@ -107,8 +107,8 @@ class ParserRequest<T>(
      * A kotlin version https://stackoverflow.com/a/16852314 which allows the cahe time to be passed in
      *
      * Extracts a [Cache.Entry] from a [NetworkResponse].
-     * Cache-control headers are ignored. SoftTtl == 3 mins, ttl == 24 hours.
-     * @param response The network response to parse headers from
+     * Cache-control requestHeaders are ignored. SoftTtl == 3 mins, ttl == 24 hours.
+     * @param response The network response to parse requestHeaders from
      * @return a cache entry for the given response, or null if the response is not cacheable.
      */
     fun parseIgnoreCacheHeaders(response: NetworkResponse, cacheExpiration: CacheExpiration): Cache.Entry {

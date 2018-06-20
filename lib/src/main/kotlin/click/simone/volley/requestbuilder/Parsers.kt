@@ -3,33 +3,25 @@ package click.simone.volley.requestbuilder
 import org.json.JSONObject
 import java.io.IOException
 
-class StringRequestBuilder: VolleyRequestBuilder<String>(){
-    init {
-        parser(StringParser())
-    }
-}
+class StringResponseRequestBuilder(url: String) : VolleyRequestBuilder<String>(url, StringParser())
 
-class StringParser: Parser<String> {
+open class StringParser : Parser<String> {
     override fun parse(data: ByteArray): String {
-        try{
+        try {
             return String(data)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             throw IOException(e)
         }
     }
 }
 
-class JSONObjectRequestBuilder: VolleyRequestBuilder<JSONObject>(){
-    init {
-        parser(JSONObjectParser())
-    }
-}
+class JSONObjectResponseRequestBuilder(url: String) : VolleyRequestBuilder<JSONObject>(url, JSONObjectParser())
 
-class JSONObjectParser: Parser<JSONObject> {
+open class JSONObjectParser : Parser<JSONObject> {
     override fun parse(data: ByteArray): JSONObject {
-        try{
+        try {
             return JSONObject(String(data))
-        } catch (e: Exception){
+        } catch (e: Exception) {
             throw IOException(e)
         }
     }

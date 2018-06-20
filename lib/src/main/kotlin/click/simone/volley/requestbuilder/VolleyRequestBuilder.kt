@@ -3,40 +3,45 @@ package click.simone.volley.requestbuilder
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.RetryPolicy
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.RequestFuture
+import java.util.concurrent.TimeUnit
 
-open class VolleyRequestBuilder<T> {
+
+open class VolleyRequestBuilder<T> constructor(val url: String, val parser: Parser<T>) {
 
     protected var method: Int = Request.Method.GET
-    private var sourceUrl: String? = null
-    protected val url: String
-        get() {
-            return sourceUrl?.let { it }
-                    ?: throw IllegalStateException("Url cannot be null")
-        }
     protected var body: String? = null
     protected var listener: Response.Listener<T>? = null
     protected var errorListener: Response.ErrorListener? = null
+
+    /**
+     * Globally applied, default headers (added to all requests built by this class)
+     */
     private val defaultHeaders: MutableMap<String, String> by lazy {
         val hdrs = mutableMapOf<String, String>()
-        // May add universal headers here, if needed
+        
+        // Default body type for put/post
+        hdrs.put("content-type", "application/json")
+
+        // May add other universal headers here, if needed
         hdrs
     }
+    /**
+     * Additional headers (added to an individual request and will override any defaultHeaders values)
+     */
     private var additionalHeaders: Map<String, String>? = null
     protected var cacheExpiration: CacheExpiration? = null
     protected var retryPolicy: RetryPolicy? = null
 
+    /**
+     * Headers that represent the net outcome of default additional
+     * These are used to build the actual request
+     */
     protected val headers: Map<String, String>
         get() {
             additionalHeaders?.let { defaultHeaders.putAll(it) }
             return defaultHeaders
-        }
-
-    private var sourceParser: Parser<T>? = null
-    protected val parser: Parser<T>
-        get() {
-            return sourceParser?.let { it }
-                    ?: throw IllegalStateException("Parser cannot be null")
         }
 
     fun get(): VolleyRequestBuilder<T> {
@@ -44,33 +49,28 @@ open class VolleyRequestBuilder<T> {
         return this
     }
 
-    fun post(): VolleyRequestBuilder<T> {
+    /**
+     * Post assumes a JSON body (see defaultHeaders above)
+     * If this is not the case, you must set the Content-Type with a call to headers()
+     */
+    fun post(json: Any?): VolleyRequestBuilder<T> {
         method = Request.Method.POST
+        this.body = json?.toString()
         return this
     }
 
-    fun put(): VolleyRequestBuilder<T> {
+    /**
+     * Put assumes a JSON body (see defaultHeaders above)
+     * If this is not the case, you must set the Content-Type with a call to headers()
+     */
+    fun put(json: Any?): VolleyRequestBuilder<T> {
         method = Request.Method.PUT
+        this.body = json?.toString()
         return this
     }
 
     fun delete(): VolleyRequestBuilder<T> {
         method = Request.Method.DELETE
-        return this
-    }
-
-    fun url(url: String): VolleyRequestBuilder<T> {
-        sourceUrl = url
-        return this
-    }
-
-    fun body(body: String?): VolleyRequestBuilder<T> {
-        this.body = body
-        return this
-    }
-
-    fun body(body: Any?): VolleyRequestBuilder<T> {
-        this.body = body?.toString()
         return this
     }
 
@@ -84,18 +84,28 @@ open class VolleyRequestBuilder<T> {
         return this
     }
 
-    fun parser(parser: Parser<T>): VolleyRequestBuilder<T> {
-        this.sourceParser = parser
+    fun errorListener(errorListener: (VolleyError) -> Unit): VolleyRequestBuilder<T> {
+        this.errorListener = Response.ErrorListener(errorListener)
         return this
     }
 
-    fun cacheExpirarion(cacheExpiration: CacheExpiration): VolleyRequestBuilder<T> {
+    fun headers(headers: Map<String, String>): VolleyRequestBuilder<T> {
+        this.additionalHeaders = headers
+        return this
+    }
+
+    fun cacheExpiration(cacheExpiration: CacheExpiration): VolleyRequestBuilder<T> {
         this.cacheExpiration = cacheExpiration
         return this
     }
 
     fun retryPolicy(policy: RetryPolicy): VolleyRequestBuilder<T> {
         retryPolicy = policy
+        return this
+    }
+
+    fun doNotCache(): VolleyRequestBuilder<T> {
+        this.cacheExpiration = CacheExpiration(0, TimeUnit.MILLISECONDS)
         return this
     }
 
@@ -110,4 +120,3 @@ open class VolleyRequestBuilder<T> {
         return ParserRequest<T>(url, listener, errorListener, method, body, headers, parser, cacheExpiration, retryPolicy)
     }
 }
-
