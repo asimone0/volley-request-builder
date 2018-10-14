@@ -103,7 +103,7 @@ class VolleyRequestBuilderTest {
 
     @Test
     fun testCacheExpiration(){
-        val ce = CacheExpiration(10, TimeUnit.MINUTES)
+        val ce = TimeLapse(10, TimeUnit.MINUTES)
         val r = vrb.cacheExpiration(ce)
             .build()
         assertEquals(ce, (r as? ParserRequest)?.cacheExpiration)

@@ -13,7 +13,7 @@ interface Parser<T> {
     fun parse(data: ByteArray): T
 }
 
-data class CacheExpiration(val qty: Long, val timeUnit: TimeUnit) {
+data class TimeLapse(val qty: Long, val timeUnit: TimeUnit) {
     val millis = timeUnit.toMillis(qty)
 }
 
@@ -25,7 +25,7 @@ class ParserRequest<T>(
     protected val body: String? = null,
     requestHeaders: Map<String, String>? = null,
     val parser: Parser<T>,
-    val cacheExpiration: CacheExpiration? = null,
+    val cacheExpiration: TimeLapse? = null,
     val policy: RetryPolicy? = null
 ) : Request<T>(method, url, errorListener) {
 
@@ -104,14 +104,14 @@ class ParserRequest<T>(
     }
 
     /**
-     * A kotlin version https://stackoverflow.com/a/16852314 which allows the cahe time to be passed in
+     * A kotlin version https://stackoverflow.com/a/16852314 which allows the cache time to be passed in
      *
      * Extracts a [Cache.Entry] from a [NetworkResponse].
      * Cache-control requestHeaders are ignored. SoftTtl == 3 mins, ttl == 24 hours.
      * @param response The network response to parse requestHeaders from
      * @return a cache entry for the given response, or null if the response is not cacheable.
      */
-    fun parseIgnoreCacheHeaders(response: NetworkResponse, cacheExpiration: CacheExpiration): Cache.Entry {
+    fun parseIgnoreCacheHeaders(response: NetworkResponse, cacheExpiration: TimeLapse): Cache.Entry {
         val now = System.currentTimeMillis()
         val headers = response.headers
         var serverDate: Long = 0
